@@ -1,9 +1,15 @@
 # xwc-controller-agent
-controller-agent为controller的job具体执行的任务，即到边缘节点去安装集群。
+controller通过创建job执行任务，
+controller-agent则执行job中的具体任务，通过下发命令，到边缘节点去创建/删除/扩缩容集群。
 
-运行在云管区，需要解决如何连接到边缘节点，进行集群安装？通过消息队列nats实现。
+## 支持安装的集群类型
+serverless集群：创建一个kubeless集群
+
+istio集群：安装了istio的k8s集群
 
 ## nats
+由于controller和controller-agent都运行在云管区，需要解决如何连接到边缘节点，进行集群操作？
+通过消息队列nats实现。
 
 默认provider为nats，使用agent为nats client，连接的是托管集群的vmserver服务，提供接口：
 
