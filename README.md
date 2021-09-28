@@ -26,6 +26,7 @@ istio集群：安装了istio的k8s集群，可用于流量管理
  
 
 ## 针对集群安装， controller-agent的工作流程
+主要执行kubemec-setup项目中的安装脚本
 
 ### ssh认证
 根据节点的角色进行验证，如etcd节点，master节点，worker节点
@@ -40,6 +41,7 @@ curl -k <fileserver>/install-etcd | sh 2>&1 |tee /opt/install.log
 curl -k <fileserver>/install-etcd | sh -s init 2>&1 |tee -a /opt/install.log 
 
 ### download k8s package and install k8s
+curl -k <fileserver>/install | sh -s init  相当于执行sh install init 
 
 ### join k8s cluster
  
