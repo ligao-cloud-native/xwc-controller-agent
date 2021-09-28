@@ -51,16 +51,21 @@ func (i *Install) Start() {
 	actuator := cluster.NewActuator(i.Agent, i.Nodes, utils.Env)
 
 	//设置无密登录
-	if actuator.SSHAuth() {
-
+	if !actuator.SSHAuth() {
+		return
 	}
 
 	// 是否使用外部etcd集群，如果使用则需要安装。
 	if len(i.Nodes.Etcd) >= 3 {
-		// TODO: install etcd cluster
+		if !(actuator.EtcdDownloadPkg() && actuator.EtcdInstall()) {
+			return
+		}
 	}
 
 	// 安装k8s集群
-
+	if actuator.K8sJoinOtherMastersAndWorkers() && actuator.K8sJoinOtherMastersAndWorkers() {
+		//TODO: master node schedule
+		//TODO: callback execute
+	}
 
 }
