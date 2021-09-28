@@ -1,4 +1,4 @@
-package executer
+package execute
 
 import (
 	"github.com/ligao-cloud-native/kubemc/pkg/apis/xwc/v1"

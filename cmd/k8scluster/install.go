@@ -48,9 +48,12 @@ func (i *Install) Start() {
 	if len(i.Nodes.Masters) <= 0 {
 		klog.Fatal("k8s cluster master node is empty.")
 	}
+	actuator := cluster.NewActuator(i.Agent, i.Nodes, utils.Env)
 
 	//设置无密登录
-	cluster.SSHAuth(i.Agent, i.Nodes, utils.Env)
+	if actuator.SSHAuth() {
+
+	}
 
 	// 是否使用外部etcd集群，如果使用则需要安装。
 	if len(i.Nodes.Etcd) >= 3 {
