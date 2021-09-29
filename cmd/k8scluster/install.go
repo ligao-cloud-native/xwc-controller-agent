@@ -4,27 +4,23 @@ import (
 	"github.com/ligao-cloud-native/xwc-controller-agent/cluster"
 	"github.com/ligao-cloud-native/xwc-controller-agent/cmd/utils"
 	"github.com/ligao-cloud-native/xwc-controller-agent/pkg/types"
-	"github.com/ligao-cloud-native/xwc-controller-agent/provider"
 	"github.com/spf13/cobra"
 	"k8s.io/klog/v2"
 )
 
 
 type Install struct {
-	Name     string
-	Action   string
-	Nodes    types.Nodes
-	Agent    provider.Agent
-	Callback utils.Callback
+	operator
+	Action   types.OperatorType
 }
 
 func NewInstallOption() *Install {
-	install := Install{Action: "install"}
+	install := Install{Action: types.InstallOperatorType}
 
 	install.Agent = utils.GetAgent()
 	install.Nodes =	utils.GetNodes()
 
-	install.Callback = utils.NewCallback()
+	install.Callback = NewCallback(install.Agent, install.Nodes)
 
 	return &install
 }
@@ -33,7 +29,7 @@ func NewInstallCmd() *cobra.Command{
 	install := NewInstallOption()
 
 	cmd := &cobra.Command{
-		Use:                   "install",
+		Use:                   string(types.InstallOperatorType),
 		Short:                 "install k8s cluster",
 		Long: "install k8s cluster",
 		Run: func(cmd *cobra.Command, args []string) {
@@ -65,7 +61,12 @@ func (i *Install) Start() {
 	// 安装k8s集群
 	if actuator.K8sJoinOtherMastersAndWorkers() && actuator.K8sJoinOtherMastersAndWorkers() {
 		//TODO: master node schedule
-		//TODO: callback execute
+
+		// callback execute
+		i.Callback.Command = cluster.CallBackCmd(types.InstallOperatorType, i.Nodes, utils.Env.PkgServerUrl)
+		i.Callback.Execute()
+
+
 	}
 
 }

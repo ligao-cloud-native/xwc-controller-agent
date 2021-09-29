@@ -47,7 +47,7 @@ func (c *Concurrent) Execute() bool {
 	return <-statistics
 }
 
-
+// 需要考虑某个节点既是master又是worker的情况
 func (c *Concurrent) execute(execResultCh chan types.CmdExecResult, finishedCh chan bool) {
 	var wg sync.WaitGroup
 

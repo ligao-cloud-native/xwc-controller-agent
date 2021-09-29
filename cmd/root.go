@@ -14,8 +14,8 @@ func NewK8SClusterCommand() *cobra.Command {
 	}
 
 	cmd.AddCommand(k8scluster.NewInstallCmd())
+	cmd.AddCommand(k8scluster.NewRemoveCmd())
 	cmd.AddCommand(k8scluster.NewScaleCmd())
-	cmd.AddCommand(k8scluster.NewReduceCmd())
 	cmd.AddCommand(k8scluster.NewResetCmd())
 
 	return cmd

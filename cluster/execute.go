@@ -7,6 +7,7 @@ import (
 	"github.com/ligao-cloud-native/xwc-controller-agent/pkg/types"
 	"github.com/ligao-cloud-native/xwc-controller-agent/provider"
 	"k8s.io/klog/v2"
+	"strings"
 	"time"
 )
 
@@ -134,6 +135,75 @@ func (a *Actuator) K8sJoinOtherMastersAndWorkers() bool {
 	return a.Concurrent.Execute()
 
 }
+
+
+func (a *Actuator) K8sResetNodes() bool {
+	etcdResetCmd := fmt.Sprintf(etcdCleanCmd, a.Env.PkgServerUrl)
+	k8sNodeResetCmd := fmt.Sprintf(k8sResetCmd, a.Env.PkgServerUrl)
+	a.Concurrent.Command = types.Command{
+		InitNodeEtcdCmd: etcdResetCmd,
+		EtcdCmd: etcdResetCmd,
+		InitNodeMasterCmd: k8sNodeResetCmd,
+		MasterCmd: k8sNodeResetCmd,
+		WorkerCmd: k8sNodeResetCmd,
+	}
+
+	return a.Concurrent.Execute()
+}
+
+func (a *Actuator) K8sScaleNodes() bool {
+	// 获取join token
+	initMasterNode := v1.Node{}
+	for _, node := range a.Nodes {
+		if node.Role == execute.NodeRoleMaster && node.IsInitNode {
+			initMasterNode = node.Node
+			break
+		}
+	}
+
+	k8sCmdParam := ""
+	result, success := a.Agent.CommandExecute(initMasterNode, k8sJoinTokenCmd)
+	if success {
+		//TODO:处理result
+		for _, v := range strings.Split(result, " ") {
+			k8sCmdParam = k8sCmdParam + " " + strings.Trim(v, "\n")
+		}
+	}
+
+	k8sCmdParam += CniK8sverRuntimeCmdParam(a.Nodes)
+
+	scaleCmd := fmt.Sprintf(k8sScaleNodeCmd, a.Env.PkgServerUrl, a.Env.PkgServerUrl, k8sCmdParam)
+	cmd := fmt.Sprintf(k8sResetCmd, a.Env.PkgServerUrl) + " && " + scaleCmd
+	a.Concurrent.Command = types.Command{
+		WorkerCmd: cmd,
+	}
+
+	return a.Concurrent.Execute()
+
+}
+
+// 需要考虑某个节点既是master又是worker的情况
+func (a *Actuator) K8sRemoveNodes() bool {
+	// master节点只删除一个，且不清理环境
+	masterNode := v1.Node{}
+	for _, node := range a.Nodes {
+		if node.Role == execute.NodeRoleMaster {
+			masterNode = node.Node
+			break
+		}
+	}
+	result, success := a.Agent.CommandExecute(masterNode, fmt.Sprintf(k8sMasterCleanCmd, masterNode.IP, masterNode.IP))
+	if success {
+		//TODO:处理result
+	}
+
+
+	a.Concurrent.Command = types.Command{
+		WorkerCmd: k8sNodeCleanCmd,
+	}
+	return a.Concurrent.Execute()
+}
+
 
 
 func allClusterNodes(nodes types.Nodes) []execute.ClusterNodes {
