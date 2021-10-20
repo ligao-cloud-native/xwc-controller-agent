@@ -49,13 +49,17 @@ func (c *Concurrent) Execute() bool {
 
 // 需要考虑某个节点既是master又是worker的情况
 func (c *Concurrent) execute(execResultCh chan types.CmdExecResult, finishedCh chan bool) {
+	// 采用chan+sync的方式控制并发数
+	limitCh := make(chan bool, 5)
+
 	var wg sync.WaitGroup
 
 	for _, node := range c.Nodes {
 		wg.Add(1)
+		limitCh <- true
 
 		result := types.CmdExecResult{Host: node.IP}
-		go func(host ClusterNodes) {
+		go func(limitCh chan bool, host ClusterNodes) {
 			defer wg.Done()
 
 			switch host.Role {
@@ -82,7 +86,8 @@ func (c *Concurrent) execute(execResultCh chan types.CmdExecResult, finishedCh c
 
 			execResultCh <- result
 
-		}(node)
+			<-limitCh
+		}(limitCh, node)
 	}
 
 	wg.Wait()

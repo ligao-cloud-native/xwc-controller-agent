@@ -7,12 +7,15 @@ import (
 	"github.com/ligao-cloud-native/xwc-controller-agent/pkg/types"
 	"github.com/ligao-cloud-native/xwc-controller-agent/provider"
 	"k8s.io/klog/v2"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 )
 
-const (
-	DownloadPkgTimeout = 90 * time.Second
+var (
+	timeout, _ = strconv.ParseInt(os.Getenv("TIMEOUT"), 10, 64)
+	DownloadPkgTimeout = time.Duration(timeout) * time.Second
 )
 
 type Actuator struct {

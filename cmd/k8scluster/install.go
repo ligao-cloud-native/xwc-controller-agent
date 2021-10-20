@@ -56,6 +56,7 @@ func (i *Install) Start() {
 		if !(actuator.EtcdDownloadPkg() && actuator.EtcdInstall()) {
 			return
 		}
+
 	}
 
 	// 安装k8s集群
